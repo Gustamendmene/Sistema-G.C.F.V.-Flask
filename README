@@ -1,0 +1,9 @@
+1-python -m venv .venv
+2-.\.venv\Scripts\Activate.ps1
+3-python -m pip install -r requirements.txt
+4-cole no .env "
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=A SUA SENHA AQUI!
+DB_NAME=mercado
+SECRET_KEY=escreva-qualquer-texto-aqui"

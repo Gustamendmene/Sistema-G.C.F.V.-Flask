@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block titulo %}Produtos · Mercadinho São José{% endblock %}
+{% block cabecalho_titulo %}Produtos{% endblock %}
+{% block cabecalho_sub %}Cadastre, consulte e exclua os produtos do mercado.{% endblock %}
+
+{% block conteudo %}
+  {% set campos = [
+    ("nome", "Nome *", "text", true),
+    ("categoria", "Categoria", "text", false),
+    ("marca", "Marca", "text", false),
+    ("codigo_barras", "Código de barras", "text", false),
+    ("fornecedor", "Fornecedor", "text", false),
+    ("preco_custo", "Preço de custo", "text", false),
+    ("preco_venda", "Preço de venda *", "text", true),
+    ("data_entrega", "Data de entrega *", "date", true),
+    ("data_validade", "Validade *", "date", true),
+    ("quantidade", "Quantidade *", "number", true),
+    ("quantidade_minima", "Quantidade mínima", "number", false),
+    ("lote", "Lote", "text", false),
+    ("localizacao", "Localização", "text", false),
+  ] %}
+
+  <section class="painel formulario">
+    <h2>Novo produto</h2>
+
+    {% if erro_form %}
+      <div class="aviso erro" role="alert">{{ erro_form }}</div>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('salvar_produto') }}">
+      <div class="campos">
+        {% for chave, rotulo, tipo, obrigatorio in campos %}
+          <label>{{ rotulo }}
+            <input type="{{ tipo }}" name="{{ chave }}"
+                   value="{{ form.get(chave, '') }}"
+                   {% if obrigatorio %}required{% endif %}
+                   {% if tipo == 'number' %}min="0" step="1"{% endif %}
+                   {% if chave.startswith('preco') %}inputmode="decimal" placeholder="0,00"{% endif %}>
+          </label>
+        {% endfor %}
+      </div>
+      <div class="botoes">
+        <button type="submit" class="botao">Salvar produto</button>
+        <a class="botao claro" href="{{ url_for('produtos') }}">Limpar campos</a>
+      </div>
+    </form>
+  </section>
+
+  <h2>Produtos cadastrados</h2>
+
+  {% if erro_banco %}
+    <div class="aviso erro">{{ erro_banco }}</div>
+  {% elif not produtos %}
+    <p class="suave">Nenhum produto cadastrado ainda. Preencha o formulário e clique em Salvar produto.</p>
+  {% else %}
+    <section class="painel tabela-rolagem">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>Produto</th><th>Categoria</th><th>Validade</th>
+            <th>Quantidade</th><th>Local</th><th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for id_p, nome, categoria, validade, qtd, local in produtos %}
+          <tr>
+            <td>{{ id_p }}</td>
+            <td>{{ nome }}</td>
+            <td>{{ categoria or '-' }}</td>
+            <td>{{ validade|data_br }}</td>
+            <td>{{ qtd }}</td>
+            <td>{{ local or '-' }}</td>
+            <td>
+              <form method="post"
+                    action="{{ url_for('excluir_produto', id_produto=id_p) }}"
+                    data-nome="{{ nome }}"
+                    onsubmit="return confirmarExclusao(this)">
+                <button type="submit" class="icone-botao perigo"
+                        title="Excluir produto"
+                        aria-label="Excluir {{ nome }}">
+                  {{ icone('lixeira', 18) }}
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  {% endif %}
+
+  <script>
+    function confirmarExclusao(form) {
+      return confirm('Excluir o produto "' + form.dataset.nome +
+                     '"? O estoque dele também será apagado.');
+    }
+  </script>
+{% endblock %}

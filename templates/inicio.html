@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block titulo %}Início · Mercadinho São José{% endblock %}
+{% block cabecalho_titulo %}Visão geral{% endblock %}
+{% block cabecalho_sub %}Bem-vindo ao sistema do Mercadinho São José!{% endblock %}
+
+{% block conteudo %}
+  {% if erro %}
+    <div class="aviso erro">{{ erro }}</div>
+  {% endif %}
+
+  <h2>Resumo do estoque</h2>
+  <section class="cartoes">
+    <article class="cartao">
+      <span class="cartao-icone azul">{{ icone('produtos', 28) }}</span>
+      <span class="rotulo">Produtos cadastrados</span>
+      <span class="valor">{{ total_produtos }}</span>
+    </article>
+    <article class="cartao">
+      <span class="cartao-icone azul">{{ icone('lotes', 28) }}</span>
+      <span class="rotulo">Lotes registrados</span>
+      <span class="valor">{{ total_lotes }}</span>
+    </article>
+    <article class="cartao">
+      <span class="cartao-icone amarelo">{{ icone('relogio', 28) }}</span>
+      <span class="rotulo">Próximos do vencimento</span>
+      <span class="valor">{{ proximos }}</span>
+    </article>
+    <article class="cartao">
+      <span class="cartao-icone vermelho">{{ icone('alerta', 28) }}</span>
+      <span class="rotulo">Lotes vencidos</span>
+      <span class="valor">{{ vencidos }}</span>
+    </article>
+  </section>
+
+  <h2>Acesso rápido</h2>
+  <a class="atalho" href="{{ url_for('produtos') }}">
+    <span class="cartao-icone azul">{{ icone('mais', 30) }}</span>
+    <span class="texto">
+      <strong>Cadastro de produtos</strong>
+      <span class="desc">Área para cadastrar e gerenciar produtos.</span>
+    </span>
+    {{ icone('seta') }}
+  </a>
+  <a class="atalho" href="{{ url_for('validade') }}">
+    <span class="cartao-icone azul">{{ icone('validade', 30) }}</span>
+    <span class="texto">
+      <strong>Controle de validade</strong>
+      <span class="desc">Acompanhe os lotes e seus vencimentos.</span>
+    </span>
+    {{ icone('seta') }}
+  </a>
+{% endblock %}

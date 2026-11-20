@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Mercadinho São José{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/estilo.css') }}">
+</head>
+<body>
+
+{% macro item(chave, endereco, nome_icone, texto) %}
+  <a href="{{ url_for(endereco) }}"
+     class="{{ 'ativo' if pagina == chave else '' }}"
+     {% if pagina == chave %}aria-current="page"{% endif %}>
+    {{ icone(nome_icone) }}<span>{{ texto }}</span>
+  </a>
+{% endmacro %}
+
+<aside class="menu">
+  <div class="logo">
+    <img src="{{ url_for('static', filename='img/logo_sao_jose.png') }}"
+         alt="Logo do Mercadinho São José"
+         onerror="this.style.display='none'">
+  </div>
+  <p class="nome-mercado">MERCADINHO SÃO JOSÉ</p>
+  <hr>
+  <p class="menu-titulo">MENU PRINCIPAL</p>
+  <nav aria-label="Menu principal">
+    {{ item('inicio', 'inicio', 'inicio', 'Início') }}
+    {{ item('produtos', 'produtos', 'produtos', 'Produtos') }}
+    {{ item('lotes', 'lotes', 'lotes', 'Lotes') }}
+    {{ item('estoque', 'estoque', 'estoque', 'Estoque') }}
+    {{ item('validade', 'validade', 'validade', 'Validade') }}
+  </nav>
+  <p class="rodape-menu">Sistema de Controle de Estoque</p>
+</aside>
+
+<main class="conteudo">
+  <header class="cabecalho">
+    <div>
+      <h1>{% block cabecalho_titulo %}{% endblock %}</h1>
+      <p>{% block cabecalho_sub %}{% endblock %}</p>
+    </div>
+    <a href="{{ url_for('validade') }}" class="sino"
+       title="Ver alertas de validade" aria-label="Ver alertas de validade">
+      {{ icone('sino', 24) }}
+    </a>
+  </header>
+  <hr class="linha">
+
+  {% with mensagens = get_flashed_messages(with_categories=true) %}
+    {% for categoria, texto in mensagens %}
+      <div class="aviso {{ categoria }}" role="status">{{ texto }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  {% block conteudo %}{% endblock %}
+</main>
+
+</body>
+</html>

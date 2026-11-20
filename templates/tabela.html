@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ titulo }} · Mercadinho São José{% endblock %}
+{% block cabecalho_titulo %}{{ titulo }}{% endblock %}
+{% block cabecalho_sub %}{{ subtitulo }}{% endblock %}
+
+{% block conteudo %}
+  {% if erro %}
+    <div class="aviso erro">{{ erro }}</div>
+  {% elif not linhas %}
+    <p class="suave">{{ vazio }}</p>
+  {% else %}
+    <section class="painel tabela-rolagem">
+      <table>
+        <thead>
+          <tr>
+            {% for coluna in colunas %}<th>{{ coluna }}</th>{% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for linha in linhas %}
+          <tr>
+            {% for celula in linha %}
+              <td>
+                {% if celula is mapping %}
+                  <span class="etiqueta {{ celula.cor }}">{{ celula.texto }}</span>
+                {% else %}
+                  {{ celula }}
+                {% endif %}
+              </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  {% endif %}
+{% endblock %}
