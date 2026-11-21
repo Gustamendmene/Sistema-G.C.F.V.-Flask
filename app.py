@@ -10,7 +10,6 @@ from funcoes.produto import inserir_produto, deletar_produto, listar_produtos
 from funcoes.estoque import (
     resumo_estoque,
     listar_alertas,
-    listar_lotes,
     listar_estoque,
 )
 from icones import icone
@@ -44,13 +43,6 @@ def etiqueta(texto, cor):
     return {"texto": texto, "cor": cor}
 
 
-def linhas_lotes():
-    return [
-        (lote or "-", nome, formatar_data(validade), qtd, local or "-")
-        for lote, nome, validade, qtd, local in listar_lotes()
-    ]
-
-
 def linhas_estoque():
     linhas = []
     for nome, qtd, minimo, atualizado in listar_estoque():
@@ -80,7 +72,7 @@ def linhas_validade():
 
 
 def pagina_tabela(pagina, titulo, subtitulo, colunas, buscar, vazio):
-    """Monta uma tela de consulta (Lotes, Estoque e Validade)."""
+    """Monta uma tela de consulta (Estoque e Validade)."""
     erro, linhas = None, []
     try:
         linhas = buscar()
@@ -111,14 +103,14 @@ def pagina_produtos(form=None, erro_form=None):
 def inicio():
     erro = None
     try:
-        total_produtos, total_lotes, proximos, vencidos = resumo_estoque()
+        total_produtos, proximos, vencidos = resumo_estoque()
     except Exception as e:
-        total_produtos = total_lotes = proximos = vencidos = 0
+        total_produtos = proximos = vencidos = 0
         erro = ("Não foi possível ler o banco de dados. Confira se o MySQL "
                 f"está ligado e se o .env está correto. ({e})")
     return render_template(
         "inicio.html", pagina="inicio", erro=erro,
-        total_produtos=total_produtos, total_lotes=total_lotes,
+        total_produtos=total_produtos,
         proximos=proximos, vencidos=vencidos,
     )
 
@@ -159,7 +151,7 @@ def salvar_produto():
             f.get("codigo_barras") or None,  
             f.get("fornecedor", ""), preco_custo, preco_venda,
             entrega, validade, quantidade, minima,
-            f.get("lote", ""), f.get("localizacao", ""),
+            f.get("localizacao", ""),
         )
     except Exception as e:
         return pagina_produtos(f, f"Não foi possível salvar o produto: {e}")
@@ -180,16 +172,6 @@ def excluir_produto(id_produto):
     else:
         flash("Esse produto já não existe.", "erro")
     return redirect(url_for("produtos"))
-
-
-@app.route("/lotes")
-def lotes():
-    return pagina_tabela(
-        "lotes", "Lotes", "Lotes registrados, com validade e quantidade.",
-        ["Lote", "Produto", "Validade", "Quantidade", "Local"],
-        linhas_lotes,
-        "Nenhum lote registrado ainda. Cadastre um produto na tela Produtos.",
-    )
 
 
 @app.route("/estoque")

@@ -3,7 +3,7 @@ from banco.conexao import conectar
 
 def inserir_produto(nome, categoria, marca, codigo_barras, fornecedor,
                     preco_custo, preco_venda, data_entrega, data_validade,
-                    quantidade, quantidade_minima, lote, localizacao):
+                    quantidade, quantidade_minima, localizacao):
     """Cadastra o produto e já cria a linha dele no estoque."""
     con = conectar()
     cur = con.cursor()
@@ -19,9 +19,9 @@ def inserir_produto(nome, categoria, marca, codigo_barras, fornecedor,
         id_produto = cur.lastrowid
         cur.execute(
             """INSERT INTO estoque (id_produto, quantidade_atual,
-               quantidade_minima, lote, localizacao)
-               VALUES (%s,%s,%s,%s,%s)""",
-            (id_produto, quantidade, quantidade_minima, lote, localizacao),
+               quantidade_minima, localizacao)
+               VALUES (%s,%s,%s,%s)""",
+            (id_produto, quantidade, quantidade_minima, localizacao),
         )
         con.commit()
         return id_produto

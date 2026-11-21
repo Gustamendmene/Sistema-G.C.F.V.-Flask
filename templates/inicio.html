@@ -17,18 +17,13 @@
       <span class="valor">{{ total_produtos }}</span>
     </article>
     <article class="cartao">
-      <span class="cartao-icone azul">{{ icone('lotes', 28) }}</span>
-      <span class="rotulo">Lotes registrados</span>
-      <span class="valor">{{ total_lotes }}</span>
-    </article>
-    <article class="cartao">
       <span class="cartao-icone amarelo">{{ icone('relogio', 28) }}</span>
       <span class="rotulo">Próximos do vencimento</span>
       <span class="valor">{{ proximos }}</span>
     </article>
     <article class="cartao">
       <span class="cartao-icone vermelho">{{ icone('alerta', 28) }}</span>
-      <span class="rotulo">Lotes vencidos</span>
+      <span class="rotulo">Produtos vencidos</span>
       <span class="valor">{{ vencidos }}</span>
     </article>
   </section>
@@ -46,7 +41,7 @@
     <span class="cartao-icone azul">{{ icone('validade', 30) }}</span>
     <span class="texto">
       <strong>Controle de validade</strong>
-      <span class="desc">Acompanhe os lotes e seus vencimentos.</span>
+      <span class="desc">Acompanhe os produtos e seus vencimentos.</span>
     </span>
     {{ icone('seta') }}
   </a>

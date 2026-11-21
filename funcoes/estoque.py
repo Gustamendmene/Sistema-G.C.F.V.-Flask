@@ -23,28 +23,16 @@ def contar_alertas():
 
 
 def resumo_estoque():
-    """Devolve (produtos, lotes, próximos do vencimento, vencidos)."""
+    """Devolve (produtos, próximos do vencimento, vencidos)."""
     linhas = _consultar("""
         SELECT
             (SELECT COUNT(*) FROM produto),
-            (SELECT COUNT(*) FROM estoque),
             (SELECT COUNT(*) FROM produto
               WHERE data_validade >= CURDATE()
                 AND DATEDIFF(data_validade, CURDATE()) <= 7),
             (SELECT COUNT(*) FROM produto WHERE data_validade < CURDATE())
     """)
     return linhas[0]
-
-
-def listar_lotes():
-    """Devolve (lote, produto, validade, quantidade, local)."""
-    return _consultar("""
-        SELECT e.lote, p.nome, p.data_validade,
-               e.quantidade_atual, e.localizacao
-        FROM estoque e
-        JOIN produto p ON p.id_produto = e.id_produto
-        ORDER BY p.data_validade
-    """)
 
 
 def listar_estoque():
