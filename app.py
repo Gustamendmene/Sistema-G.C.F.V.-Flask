@@ -6,7 +6,8 @@ from flask import Flask, flash, redirect, render_template, request, url_for
 
 load_dotenv()  
 
-from funcoes.produto import inserir_produto, deletar_produto, listar_produtos
+from funcoes.models.productDTO import ProductDTO
+from funcoes.produto import inserir_produto, deletar_produto, listar_produtos, update_produto, obter_produto
 from funcoes.estoque import (
     resumo_estoque,
     listar_alertas,
@@ -166,6 +167,76 @@ def salvar_produto():
 
     flash(f"Produto '{f['nome']}' salvo com sucesso.", "ok")
     return redirect(url_for("produtos"))
+
+@app.route("/produtos/<int:id_produto>/editar", methods=["POST"])
+def atualizar_produto(id_produto):
+    atual = obter_produto(id_produto)
+    if atual is None:
+        flash("Esse produto não existe mais.", "erro")
+        return redirect(url_for("produtos"))
+
+    def valor_form(valor):
+        if valor is None:
+            return ""
+        return valor.isoformat() if hasattr(valor, "isoformat") else str(valor)
+
+    f = {chave: valor_form(valor) for chave, valor in atual.items()}
+    f.update({chave: valor.strip() for chave, valor in request.form.items()})
+    modificados = [chave for chave, antigo in atual.items()
+                   if f.get(chave, "") != valor_form(antigo)]
+    if not modificados:
+        flash("Edite pelo menos um campo antes de salvar.", "erro")
+        return redirect(url_for("produtos"))
+
+    # Campos numéricos ou datas vazios mantêm o valor atual.
+    for chave in ("preco_custo", "preco_venda", "data_entrega", "data_validade",
+                  "quantidade", "quantidade_minima"):
+        if not f.get(chave):
+            f[chave] = valor_form(atual[chave])
+    try:
+        preco_venda = float(f.get("preco_venda", "").replace(",", "."))
+        preco_custo = (float(f["preco_custo"].replace(",", "."))
+                       if f.get("preco_custo") else 0)
+        entrega = datetime.strptime(f.get("data_entrega", ""), "%Y-%m-%d").date()
+        validade = datetime.strptime(f.get("data_validade", ""), "%Y-%m-%d").date()
+        quantidade = int(f.get("quantidade", ""))
+        minima = (int(f["quantidade_minima"])
+                  if f.get("quantidade_minima") else 5)
+    except ValueError:
+        return pagina_produtos(
+            f, "Confira os campos com *: preço de venda (ex.: 25,90), "
+               "datas completas e quantidade em números inteiros.")
+
+    if not f.get("nome"):
+        return pagina_produtos(f, "Informe o nome do produto.")
+    if validade < entrega:
+        return pagina_produtos(
+            f, "A validade não pode ser anterior à data de entrega.")
+    if quantidade < 0 or minima < 0:
+        return pagina_produtos(f, "As quantidades não podem ser negativas.")
+
+    product_dto = ProductDTO(
+        nome=f["nome"],
+        categoria=f.get("categoria", ""),
+        marca=f.get("marca", ""),
+        codigo_barras=f.get("codigo_barras") or None,
+        fornecedor=f.get("fornecedor", ""),
+        preco_custo=preco_custo,
+        preco_venda=preco_venda,
+        data_entrega=entrega,
+        data_validade=validade,
+        quantidade=quantidade,
+        quantidade_minima=minima,
+        lote=f.get("lote", ""),
+        localizacao=f.get("localizacao", "")
+    )
+
+    try:
+        update_produto(id_produto, product_dto)
+        flash(f"Produto '{f['nome']}' atualizado com sucesso.", "ok")
+        return redirect(url_for("produtos"))
+    except Exception as e:
+        return pagina_produtos(f, f"Não foi possível atualizar o produto: {e}")
 
 
 @app.route("/produtos/<int:id_produto>/excluir", methods=["POST"])

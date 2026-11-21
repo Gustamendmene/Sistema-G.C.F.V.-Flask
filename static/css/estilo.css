@@ -204,7 +204,27 @@ input:focus {
 }
 .icone-botao.perigo { color: var(--vermelho); }
 .icone-botao.perigo:hover { background: #FBE9E9; }
+.icone-botao.editar { color: var(--azul); }
+.icone-botao.editar:hover { background: #E3ECF6; }
+.icone-botao.editar:focus-visible { outline-color: var(--azul); }
 .icone-botao:focus-visible { outline: 2px solid var(--vermelho); }
+
+.modal-edicao {
+  width: min(760px, calc(100% - 28px));
+  max-height: 90vh;
+  padding: 22px;
+  border: 0;
+  border-radius: 14px;
+  color: var(--texto);
+  background: var(--branco);
+  box-shadow: 0 18px 60px rgba(15, 23, 42, 0.28);
+  overflow-y: auto;
+}
+.modal-edicao::backdrop { background: rgba(15, 23, 42, 0.55); }
+.modal-cabecalho { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.modal-cabecalho h2 { margin: 0; }
+.modal-edicao > form > .suave { margin: 8px 0 18px; }
+.modal-edicao .icone-botao { color: var(--texto-suave); font-size: 22px; }
 
 .tabela-rolagem { padding: 8px 12px; overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; }
