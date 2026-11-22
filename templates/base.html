@@ -43,6 +43,7 @@
     <a href="{{ url_for('validade') }}" class="sino"
        title="Ver alertas de validade" aria-label="Ver alertas de validade">
       {{ icone('sino', 24) }}
+      {% if alertas_validade|default(0) %}<span class="sino-contagem">{{ alertas_validade }}</span>{% endif %}
     </a>
   </header>
   <hr class="linha">
@@ -55,6 +56,13 @@
 
   {% block conteudo %}{% endblock %}
 </main>
+
+{% if alerta_destaque|default(none) %}
+  <a class="faixa-alerta {{ alerta_destaque.nivel }}" href="{{ url_for('validade') }}">
+    <span><strong>{{ alerta_destaque.nome }}</strong> — {{ alerta_destaque.prazo }}</span>
+    <span>Ver alertas {{ icone('seta') }}</span>
+  </a>
+{% endif %}
 
 </body>
 </html>

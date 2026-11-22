@@ -62,7 +62,7 @@
           </tr>
         </thead>
         <tbody>
-          {% for id_p, nome, categoria, validade, qtd, local in produtos %}
+          {% for id_p, nome, categoria, validade, qtd, local, marca, codigo, fornecedor, custo, venda, entrega, minima, lote in produtos %}
           <tr>
             <td>{{ id_p }}</td>
             <td>{{ nome }}</td>
@@ -81,6 +81,21 @@
                   {{ icone('lixeira', 18) }}
                 </button>
               </form>
+              <button type="button" class="icone-botao editar"
+                        data-id="{{ id_p }}" data-nome="{{ nome }}"
+                        data-categoria="{{ categoria or '' }}" data-marca="{{ marca or '' }}"
+                        data-codigo_barras="{{ codigo or '' }}" data-fornecedor="{{ fornecedor or '' }}"
+                        data-preco_custo="{{ custo if custo is not none else '' }}"
+                        data-preco_venda="{{ venda if venda is not none else '' }}"
+                        data-data_entrega="{{ entrega.isoformat() if entrega else '' }}"
+                        data-data_validade="{{ validade.isoformat() if validade else '' }}"
+                        data-quantidade="{{ qtd if qtd is not none else '' }}"
+                        data-quantidade_minima="{{ minima if minima is not none else '' }}"
+                        data-lote="{{ lote or '' }}" data-localizacao="{{ local or '' }}"
+                        title="Editar produto"
+                        aria-label="Editar {{ nome }}">
+                  {{ icone('lapis', 18) }}
+              </button>
             </td>
           </tr>
           {% endfor %}
@@ -89,10 +104,62 @@
     </section>
   {% endif %}
 
+  <dialog id="modal-edicao" class="modal-edicao" aria-labelledby="titulo-edicao">
+    <form method="post" id="form-edicao">
+      <div class="modal-cabecalho">
+        <h2 id="titulo-edicao">Editar produto</h2>
+        <button type="button" class="icone-botao" id="fechar-edicao" aria-label="Fechar">×</button>
+      </div>
+      <p class="suave">Altere pelo menos um campo para salvar.</p>
+      <div class="campos">
+        {% for chave, rotulo, tipo, obrigatorio in campos %}
+          <label>{{ rotulo|replace(' *', '') }}
+            <input type="{{ tipo }}" name="{{ chave }}" data-campo="{{ chave }}"
+                   {% if tipo == 'number' %}min="0" step="1"{% endif %}
+                   {% if chave.startswith('preco') %}inputmode="decimal"{% endif %}>
+          </label>
+        {% endfor %}
+      </div>
+      <p id="erro-edicao" class="aviso erro" role="alert" hidden></p>
+      <div class="botoes">
+        <button type="submit" class="botao">Salvar alterações</button>
+        <button type="button" class="botao claro" id="cancelar-edicao">Cancelar</button>
+      </div>
+    </form>
+  </dialog>
+
   <script>
     function confirmarExclusao(form) {
       return confirm('Excluir o produto "' + form.dataset.nome +
                      '"? O estoque dele também será apagado.');
     }
+
+    const modalEdicao = document.getElementById('modal-edicao');
+    const formEdicao = document.getElementById('form-edicao');
+    const erroEdicao = document.getElementById('erro-edicao');
+    document.querySelectorAll('.icone-botao.editar').forEach((botao) => {
+      botao.addEventListener('click', () => {
+        formEdicao.action = `/produtos/${botao.dataset.id}/editar`;
+        formEdicao.querySelectorAll('[data-campo]').forEach((input) => {
+          input.value = botao.dataset[input.dataset.campo] || '';
+          input.dataset.original = input.value;
+        });
+        document.getElementById('titulo-edicao').textContent = `Editar ${botao.dataset.nome}`;
+        erroEdicao.hidden = true;
+        modalEdicao.showModal();
+      });
+    });
+    const fecharEdicao = () => modalEdicao.close();
+    document.getElementById('fechar-edicao').addEventListener('click', fecharEdicao);
+    document.getElementById('cancelar-edicao').addEventListener('click', fecharEdicao);
+    formEdicao.addEventListener('submit', (evento) => {
+      const alterado = [...formEdicao.querySelectorAll('[data-campo]')]
+        .some((input) => input.value.trim() !== (input.dataset.original || '').trim());
+      if (!alterado) {
+        evento.preventDefault();
+        erroEdicao.textContent = 'Edite pelo menos um campo antes de salvar.';
+        erroEdicao.hidden = false;
+      }
+    });
   </script>
 {% endblock %}
