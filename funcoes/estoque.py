@@ -18,6 +18,20 @@ def listar_alertas():
     return _consultar("SELECT * FROM alerta_estoque")
 
 
+def listar_alertas_validade():
+    """Produtos vencidos ou que vencem nos próximos 7 dias."""
+    return _consultar("""
+        SELECT p.id_produto, p.nome, p.data_validade,
+               DATEDIFF(p.data_validade, CURDATE()) AS dias,
+               e.quantidade_atual
+        FROM produto p
+        JOIN estoque e ON e.id_produto = p.id_produto
+        WHERE p.data_validade < CURDATE()
+           OR DATEDIFF(p.data_validade, CURDATE()) <= 7
+        ORDER BY p.data_validade, p.nome
+    """)
+
+
 def contar_alertas():
     return len(listar_alertas())
 

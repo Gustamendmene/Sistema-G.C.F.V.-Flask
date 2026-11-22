@@ -9,6 +9,19 @@
     <div class="aviso erro">{{ erro }}</div>
   {% endif %}
 
+  {% if alerta_destaque %}
+    <section class="alertas-destaque" aria-label="Alertas em destaque">
+      <h2>{{ icone('alerta', 20) }} Alertas em destaque</h2>
+      <div class="alerta-destaque-linha">
+        <span class="etiqueta {{ 'vermelho' if alerta_destaque.nivel == 'urgente' else 'amarelo' }}">
+          {{ 'URGENTE' if alerta_destaque.nivel == 'urgente' else 'ATENÇÃO' }}
+        </span>
+        <span><strong>{{ alerta_destaque.nome }}</strong>: {{ alerta_destaque.prazo }} ({{ alerta_destaque.validade }})</span>
+      </div>
+      <a href="{{ url_for('validade') }}">Ver todos os alertas</a>
+    </section>
+  {% endif %}
+
   <h2>Resumo do estoque</h2>
   <section class="cartoes">
     <article class="cartao">

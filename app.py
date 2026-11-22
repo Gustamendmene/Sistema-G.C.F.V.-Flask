@@ -11,6 +11,7 @@ from funcoes.produto import inserir_produto, deletar_produto, listar_produtos, u
 from funcoes.estoque import (
     resumo_estoque,
     listar_alertas,
+    listar_alertas_validade,
     listar_lotes,
     listar_estoque,
 )
@@ -22,9 +23,22 @@ app.add_template_global(icone, "icone")
 
 CORES_ALERTA = {
     "VENCIDO": "vermelho",
-    "PRÓXIMO DO VENCIMENTO": "amarelo",
+    "PROXIMO DO VENCIMENTO": "amarelo",
     "ESTOQUE BAIXO": "laranja",
 }
+
+
+def normalizar_alerta(valor):
+    """Converte alertas do banco, inclusive bytes legados, em texto estável."""
+    if isinstance(valor, bytes):
+        try:
+            valor = valor.decode("utf-8")
+        except UnicodeDecodeError:
+            valor = valor.decode("cp1252", errors="replace")
+    texto = str(valor or "").strip().upper()
+    if texto.startswith("PR") and "XIMO DO VENCIMENTO" in texto:
+        return "PROXIMO DO VENCIMENTO"
+    return texto
 
 
 def formatar_data(valor):
@@ -67,6 +81,7 @@ def linhas_validade():
     alertas = sorted(listar_alertas(), key=lambda linha: linha[3])
     linhas = []
     for id_p, nome, validade, dias, qtd, minimo, alerta in alertas:
+        alerta = normalizar_alerta(alerta)
         if dias < 0:
             prazo = f"venceu há {-dias} dia(s)"
         elif dias == 0:
@@ -78,6 +93,26 @@ def linhas_validade():
             etiqueta(alerta or "-", CORES_ALERTA.get(alerta, "azul")),
         ))
     return linhas
+
+
+def dados_alerta_destaque():
+    """Prepara o alerta resumido exibido no painel inicial."""
+    produtos = listar_alertas_validade()
+    if not produtos:
+        return 0, None
+    id_p, nome, validade, dias, quantidade = produtos[0]
+    if dias < 0:
+        prazo, nivel = f"venceu há {-dias} dia(s)", "urgente"
+    elif dias == 0:
+        prazo, nivel = "vence hoje", "urgente"
+    elif dias == 1:
+        prazo, nivel = "vence amanhã", "urgente"
+    else:
+        prazo, nivel = f"vence em {dias} dias", "atencao"
+    return len(produtos), {
+        "id": id_p, "nome": nome, "prazo": prazo, "nivel": nivel,
+        "quantidade": quantidade, "validade": formatar_data(validade),
+    }
 
 
 def pagina_tabela(pagina, titulo, subtitulo, colunas, buscar, vazio):
@@ -111,8 +146,10 @@ def pagina_produtos(form=None, erro_form=None):
 @app.route("/")
 def inicio():
     erro = None
+    alertas_validade, alerta_destaque = 0, None
     try:
         total_produtos, total_lotes, proximos, vencidos = resumo_estoque()
+        alertas_validade, alerta_destaque = dados_alerta_destaque()
     except Exception as e:
         total_produtos = total_lotes = proximos = vencidos = 0
         erro = ("Não foi possível ler o banco de dados. Confira se o MySQL "
@@ -121,6 +158,7 @@ def inicio():
         "inicio.html", pagina="inicio", erro=erro,
         total_produtos=total_produtos, total_lotes=total_lotes,
         proximos=proximos, vencidos=vencidos,
+        alertas_validade=alertas_validade, alerta_destaque=alerta_destaque,
     )
 
 
